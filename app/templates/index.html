@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Term Deposit Predictor — Portuguese Bank</title>
+<style>
+  :root { --ink:#0b0b0b; --ink2:#52514e; --line:#e3e2dd; --bg:#f6f6f3; --card:#ffffff;
+          --blue:#2a78d6; --blue-d:#1c5cab; --good:#0ca30c; --warn:#c98500; --bad:#d03b3b; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: "Segoe UI", system-ui, -apple-system, sans-serif; background:var(--bg); color:var(--ink); }
+  header { background:#0d366b; color:#fff; padding:22px 32px; }
+  header h1 { margin:0; font-size:22px; } header p { margin:4px 0 0; opacity:.8; font-size:14px; }
+  main { max-width:1180px; margin:24px auto; padding:0 20px; display:grid; grid-template-columns: 2fr 1fr; gap:22px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:22px; }
+  h2 { font-size:15px; margin:0 0 14px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink2); }
+  fieldset { border:none; padding:0; margin:0 0 18px; }
+  legend { font-weight:600; margin-bottom:10px; font-size:14px; }
+  .grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; }
+  label { font-size:12px; color:var(--ink2); display:block; margin-bottom:4px; }
+  input, select { width:100%; padding:8px 10px; border:1px solid #cfcec8; border-radius:8px; font-size:14px; background:#fff; }
+  input:focus, select:focus { outline:2px solid var(--blue); border-color:transparent; }
+  button { background:var(--blue); color:#fff; border:none; padding:12px 26px; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer; }
+  button:hover { background:var(--blue-d); }
+  .result { text-align:center; }
+  .prob { font-size:52px; font-weight:700; margin:6px 0; }
+  .badge { display:inline-block; padding:6px 14px; border-radius:999px; font-weight:600; font-size:14px; }
+  .yes { background:#e3f5e3; color:#075f07; } .no { background:#fbe7e7; color:#9b2222; }
+  .bar { height:10px; background:#ecebe6; border-radius:6px; margin:16px 0 6px; overflow:hidden; }
+  .bar span { display:block; height:100%; background:var(--blue); }
+  .muted { color:var(--ink2); font-size:13px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; } td { padding:6px 0; border-bottom:1px solid var(--line); }
+  td:last-child { text-align:right; font-weight:600; }
+  .hint { font-size:11px; color:var(--ink2); margin-top:3px; }
+  @media (max-width: 860px) { main { grid-template-columns:1fr; } .grid { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Term Deposit Subscription Predictor</h1>
+  <p>PRCP-1000 · Portuguese Bank Marketing · {{ model_name }} model</p>
+</header>
+<main>
+  <form class="card" method="post">
+    <h2>Customer details</h2>
+    <fieldset><legend>Client profile</legend>
+      <div class="grid">
+        <div><label>Age</label><input type="number" name="age" min="17" max="100" value="{{ form['age'] }}" required></div>
+        {% for f in ['job','marital','education','default','housing','loan'] %}
+        <div><label>{{ f|capitalize }}</label><select name="{{ f }}">
+          {% for o in options[f] %}<option value="{{ o }}" {% if form[f]==o %}selected{% endif %}>{{ o }}</option>{% endfor %}
+        </select></div>
+        {% endfor %}
+      </div>
+    </fieldset>
+    <fieldset><legend>Campaign contact</legend>
+      <div class="grid">
+        {% for f in ['contact','month','day_of_week','poutcome'] %}
+        <div><label>{{ f|replace('_',' ')|capitalize }}</label><select name="{{ f }}">
+          {% for o in options[f] %}<option value="{{ o }}" {% if form[f]==o %}selected{% endif %}>{{ o }}</option>{% endfor %}
+        </select></div>
+        {% endfor %}
+        <div><label>Calls this campaign</label><input type="number" name="campaign" min="1" value="{{ form['campaign'] }}" required></div>
+        <div><label>Days since last contact</label><input type="number" name="pdays" min="0" value="{{ form['pdays'] }}" required><div class="hint">999 = never contacted</div></div>
+        <div><label>Previous contacts</label><input type="number" name="previous" min="0" value="{{ form['previous'] }}" required></div>
+      </div>
+    </fieldset>
+    <fieldset><legend>Economic indicators</legend>
+      <div class="grid">
+        <div><label>Emp. variation rate</label><input type="number" step="any" name="emp.var.rate" value="{{ form['emp.var.rate'] }}" required></div>
+        <div><label>Consumer price index</label><input type="number" step="any" name="cons.price.idx" value="{{ form['cons.price.idx'] }}" required></div>
+        <div><label>Consumer confidence idx</label><input type="number" step="any" name="cons.conf.idx" value="{{ form['cons.conf.idx'] }}" required></div>
+        <div><label>Euribor 3-month rate</label><input type="number" step="any" name="euribor3m" value="{{ form['euribor3m'] }}" required></div>
+        <div><label>No. of employees</label><input type="number" step="any" name="nr.employed" value="{{ form['nr.employed'] }}" required></div>
+      </div>
+    </fieldset>
+    <button type="submit">Predict</button>
+  </form>
+
+  <div style="display:flex; flex-direction:column; gap:22px;">
+    <div class="card result">
+      <h2>Prediction</h2>
+      {% if result %}
+        <div class="prob">{{ '%.1f' % (result.probability*100) }}%</div>
+        <div class="muted">probability of subscribing</div>
+        <div class="bar"><span style="width: {{ result.probability*100 }}%"></span></div>
+        <p>{% if result.will_subscribe %}<span class="badge yes">✔ Likely to subscribe — call</span>
+           {% else %}<span class="badge no">✖ Unlikely to subscribe</span>{% endif %}</p>
+        <p class="muted">Priority: <b>{{ result.priority }}</b> · decision threshold {{ result.threshold }}</p>
+      {% else %}
+        <p class="muted">Fill in the customer details and press <b>Predict</b>.</p>
+      {% endif %}
+    </div>
+    <div class="card">
+      <h2>Model performance (test set)</h2>
+      <table>
+        <tr><td>ROC-AUC</td><td>{{ metrics['ROC-AUC'] }}</td></tr>
+        <tr><td>Recall (buyers found)</td><td>{{ '%.1f' % (metrics['Recall']*100) }}%</td></tr>
+        <tr><td>Precision</td><td>{{ '%.1f' % (metrics['Precision']*100) }}%</td></tr>
+        <tr><td>F1-score</td><td>{{ metrics['F1'] }}</td></tr>
+        <tr><td>Accuracy</td><td>{{ '%.1f' % (metrics['Accuracy']*100) }}%</td></tr>
+      </table>
+      <p class="muted">Call duration is excluded, so predictions can be made before calling.</p>
+    </div>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,67 @@
+{
+  "final": {
+    "Model": "LightGBM (tuned + threshold)",
+    "Threshold": 0.686,
+    "Accuracy": 0.8827,
+    "Precision": 0.4834,
+    "Recall": 0.5981,
+    "F1": 0.5347,
+    "ROC-AUC": 0.814,
+    "PR-AUC": 0.4894
+  },
+  "best_params": {
+    "subsample": 0.8,
+    "reg_lambda": 0,
+    "num_leaves": 15,
+    "n_estimators": 300,
+    "min_child_samples": 20,
+    "learning_rate": 0.02,
+    "colsample_bytree": 0.5
+  },
+  "tuned_cv_auc": {
+    "LightGBM": 0.7996,
+    "XGBoost": 0.798
+  },
+  "benchmark_auc_with_duration": 0.9508,
+  "top10_conversion": 0.5213,
+  "lift_table": {
+    "Top % of customers called": [
+      10,
+      20,
+      30,
+      40,
+      50
+    ],
+    "% of all buyers reached": [
+      46.228,
+      66.918,
+      74.892,
+      79.634,
+      83.944
+    ],
+    "Lift vs random": [
+      4.623,
+      3.346,
+      2.496,
+      1.991,
+      1.679
+    ]
+  },
+  "top_features": {
+    "euribor3m": 0.1626,
+    "age": 0.094,
+    "campaign": 0.0695,
+    "cons.price.idx": 0.0545,
+    "cons.conf.idx": 0.0533,
+    "nr.employed": 0.0386,
+    "emp.var.rate": 0.029,
+    "contact_cellular": 0.0286,
+    "pdays": 0.0267,
+    "poutcome_failure": 0.0243,
+    "day_of_week_mon": 0.019,
+    "month_oct": 0.0164,
+    "poutcome_success": 0.0162,
+    "previous": 0.015,
+    "default_no": 0.0145
+  }
+}
